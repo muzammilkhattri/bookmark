@@ -14,7 +14,7 @@ import { buttonVariants } from "./ui/button";
 
 export default async function UserButton() {
   const session = await auth();
-  if (!session?.user) return <Link href="/login">Login </Link>;
+  if (!session?.user) return <Link href="/login">Login 2</Link>;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
