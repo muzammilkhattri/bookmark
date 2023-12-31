@@ -4,11 +4,18 @@ import { auth } from "../auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
-import { SignIn, SignOut } from "./auth-component";
+} from "@/components/ui/dropdown-menu";
+import { SignOut } from "./auth-component";
 import Link from "next/link";
 import { buttonVariants } from "./ui/button";
 
@@ -26,11 +33,12 @@ export default async function UserButton() {
                 alt={session.user.name ?? ""}
               />
             )}
-            <AvatarFallback>{session.user.email}</AvatarFallback>
+            <AvatarFallback>{session.user.name}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
@@ -41,6 +49,7 @@ export default async function UserButton() {
             </p>
           </div>
         </DropdownMenuLabel>
+        <DropdownMenuSeparator />
         <DropdownMenuItem>
           <SignOut />
         </DropdownMenuItem>

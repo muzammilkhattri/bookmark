@@ -1,9 +1,7 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { authConfig } from "./auth.config";
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
-  ...authConfig,
   providers: [
     GoogleProvider({
       clientId:
@@ -11,4 +9,14 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
       clientSecret: "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",
     }),
   ],
+  callbacks: {
+    authorized({ request, auth }) {
+      const { pathname } = request.nextUrl;
+      if (pathname === "/dashboard") return !!auth;
+      return true;
+    },
+  },
+  pages: {
+    signIn: "/login",
+  },
 });
