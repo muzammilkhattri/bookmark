@@ -152,7 +152,10 @@ export default function Bookmarks({ bookmarks }: params) {
               >
                 <div className="flex items-center">
                   <Image
-                    src={`https://${fetchDomain(bookmark.data)}/favicon.ico`}
+                    src={
+                      "https://www.google.com/s2/favicons?sz=64&domain_url=" +
+                      fetchDomain(bookmark.data)
+                    }
                     alt="logo"
                     width={20}
                     height={20}
