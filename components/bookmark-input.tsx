@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { toast } from "sonner";
 import SpinnerAnimation from "./Spinner";
-export default function BookmarkInput() {
+export default function BookmarkInput({ update, setUpdate }) {
   const [data, setData] = useState("");
   const [name, setName] = useState("");
   const [open, setOpen] = useState(false);
@@ -46,6 +46,7 @@ export default function BookmarkInput() {
       setOpen(false);
       toast.success("Bookmark Created");
       resetInput();
+      setUpdate(update + 1);
     }
   };
   return (

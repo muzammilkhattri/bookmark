@@ -3,7 +3,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Bookmarks from "./bookmarks";
 import { Separator } from "./ui/separator";
 import { useEffect, useState } from "react";
-export default function BookmarkList() {
+export default function BookmarkList({ update }) {
   const supabase = createClientComponentClient();
   const [bookmarks, setBookmarks] = useState([]);
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function BookmarkList() {
     fetchData();
     // those are props values that used inside `obtenerTasks`
     // when those changes, this useeffect will rerun
-  }, [bookmarks]);
+  }, [update]);
 
   // beign able to navigate the bookmarks element with the arrow keys
   return (
