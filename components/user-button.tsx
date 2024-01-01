@@ -16,7 +16,6 @@ export default async function UserButton() {
   const supabase = createServerComponentClient({ cookies });
 
   const { data: session } = await supabase.auth.getUser();
-  console.log(session);
   if (!session?.user) return <Link href="/login">Login</Link>;
   return (
     <DropdownMenu>

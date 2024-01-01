@@ -8,14 +8,7 @@ import {
   ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-type params = {
-  bookmarks: Bookmark;
-};
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState, useReducer } from "react";
 const useKeyPress = (targetKey) => {
   const [keyPressed, setKeyPressed] = useState(false);
@@ -46,7 +39,33 @@ const useKeyPress = (targetKey) => {
 };
 const initialState = { selectedIndex: 0 };
 
-export default function Bookmarks({ bookmarks }: params) {
+export default function Bookmarks({
+  serverBookmarks,
+}: {
+  serverBookmarks: Bookmark[];
+}) {
+  const [bookmarks, setBookmarks] = useState(serverBookmarks);
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    setBookmarks(serverBookmarks);
+  }, [serverBookmarks]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("realtime-bookmarks")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "bookmarks" },
+        (payload) =>
+          setBookmarks((bookmarks) => [payload.new as Bookmark, ...bookmarks])
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, setBookmarks, bookmarks]);
   const reducer = (state, action) => {
     switch (action.type) {
       case "arrowUp":
