@@ -80,6 +80,9 @@ export default function BookmarkInput() {
                 className="col-span-3"
                 onChange={(e) => setName(e.target.value)}
                 value={name}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") CreateBookmark();
+                }}
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -91,6 +94,9 @@ export default function BookmarkInput() {
                 className="col-span-3"
                 onChange={(e) => setData(e.target.value)}
                 value={data}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") CreateBookmark();
+                }}
               />
             </div>
           </div>
