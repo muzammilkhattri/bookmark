@@ -19,7 +19,7 @@ export default async function BookmarkList() {
         <p>Created At</p>
       </div>
       <Separator className="my-4" />
-      <Bookmarks serverBookmarks={bookmarksData} />
+      <Bookmarks serverBookmarks={bookmarksData as Bookmark[]} />
     </div>
   );
 }
