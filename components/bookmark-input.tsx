@@ -12,6 +12,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useHotkeys } from "@mantine/hooks";
+import axios from "axios";
+import cheerio from "cheerio";
 import { Label } from "@/components/ui/label";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { toast } from "sonner";
@@ -48,6 +50,16 @@ export default function BookmarkInput() {
       resetInput();
     }
   };
+  const fetchTitle = async () => {
+    try {
+      const response = await axios.post("/api/fetch-title", {
+        url: "https://stackoverflow.com/questions/70564777/nextjs-api-error-typeerror-res-status-is-not-a-function",
+      });
+      setName(response.data.title);
+    } catch (error) {
+      console.error("Error fetching title:", error);
+    }
+  };
   return (
     <div className="max-w-2xl w-full flex items-center shadow-sm border-2 p-2 rounded-md ring-gray-400 border-gray focus-within:ring-2">
       <PlusIcon className="h-6 w-[5%]" />
@@ -58,7 +70,10 @@ export default function BookmarkInput() {
         value={data}
         id="input-data"
         onKeyDown={(e) => {
-          if (e.key === "Enter") setOpen(true);
+          if (e.key === "Enter") {
+            setOpen(true);
+            fetchTitle();
+          }
         }}
       />
       <div className="flex items-center w-[6%] bg-gray-100  p-1 rounded-md">
