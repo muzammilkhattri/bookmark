@@ -188,7 +188,10 @@ export default function Bookmarks({
                     height={20}
                     className="h-5 w-5 mr-2"
                   />
-                  <h2 className="text-md max-w-40 text-ellipsis overflow-hidden whitespace-nowrap">
+                  <h2
+                    className="text-md max-w-40 text-ellipsis overflow-hidden whitespace-nowrap"
+                    title={bookmark.name}
+                  >
                     {bookmark.name}
                   </h2>
                   <p className="text-sm text-gray-400 ml-2 max-w-96 text-ellipsis overflow-hidden whitespace-nowrap">
