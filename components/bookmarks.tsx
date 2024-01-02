@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/context-menu";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState, useReducer } from "react";
+import { toast } from "sonner";
 const useKeyPress = (targetKey) => {
   const [keyPressed, setKeyPressed] = useState(false);
 
@@ -56,9 +57,19 @@ export default function Bookmarks({
       .channel("realtime-bookmarks")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "bookmarks" },
-        (payload) =>
-          setBookmarks((bookmarks) => [payload.new as Bookmark, ...bookmarks])
+        { event: "*", schema: "public", table: "bookmarks" },
+        (payload) => {
+          if (payload.eventType === "DELETE") {
+            setBookmarks((bookmarks) =>
+              bookmarks.filter((bookmark) => bookmark.id !== payload.old.id)
+            );
+          } else if (payload.eventType === "INSERT") {
+            setBookmarks((bookmarks) => [
+              payload.new as Bookmark,
+              ...bookmarks,
+            ]);
+          }
+        }
       )
       .subscribe();
 
@@ -89,6 +100,13 @@ export default function Bookmarks({
       default:
         throw new Error();
     }
+  };
+  const deleteBookmark = async (id: string) => {
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .delete()
+      .match({ id: id });
+    toast.success("Bookmark Deleted");
   };
   const formateDate = (timestamp) => {
     const date = new Date(timestamp);
@@ -142,7 +160,7 @@ export default function Bookmarks({
   }, [arrowDownPressed]);
   // show the month and date only form timestamp
   return (
-    <div className="flex flex-col justify-center" id="bookmark">
+    <div className="flex flex-col justify-center max-h-screen" id="bookmark">
       {bookmarks?.map((bookmark: Bookmark, i) => (
         <div>
           <ContextMenu key={bookmark.id}>
@@ -213,9 +231,13 @@ export default function Bookmarks({
                 Open
                 <ContextMenuShortcut>⌘R</ContextMenuShortcut>
               </ContextMenuItem>
-              <ContextMenuItem inset>
+              <ContextMenuItem
+                inset
+                onClick={() => deleteBookmark(bookmark.id)}
+                className="cursor-pointer"
+              >
                 Delete
-                <ContextMenuShortcut>⌘]</ContextMenuShortcut>
+                <ContextMenuShortcut>⌘D</ContextMenuShortcut>
               </ContextMenuItem>
             </ContextMenuContent>
           </ContextMenu>
