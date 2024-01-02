@@ -10,6 +10,5 @@ export async function POST(request: Request) {
   const html = response.data;
   const $ = cheerio.load(html);
   const pageTitle = $("head title").text();
-  console.log("Page title:", pageTitle);
   return Response.json({ title: pageTitle });
 }

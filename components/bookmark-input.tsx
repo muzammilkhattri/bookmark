@@ -3,76 +3,68 @@ import { Input } from "@/components/ui/input";
 import { PlusIcon } from "@radix-ui/react-icons";
 import { Command } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { useHotkeys } from "@mantine/hooks";
 import axios from "axios";
-import cheerio from "cheerio";
-import { Label } from "@/components/ui/label";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { toast } from "sonner";
-import SpinnerAnimation from "./Spinner";
+import { create } from "domain";
+import { title } from "process";
 export default function BookmarkInput() {
-  const [data, setData] = useState("");
-  const [name, setName] = useState("");
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [link, setLink] = useState("");
   const supabase = createClientComponentClient();
-  const resetInput = () => {
-    setData("");
-    setName("");
-    setLoading(false);
-  };
   useHotkeys([
     ["ctrl+f", () => document.getElementById("input-data")?.focus()],
   ]);
+  const promise = () =>
+    new Promise((resolve) =>
+      BookMarkQuery().then(() => resolve({ message: "Bookmark Created" }))
+    );
   const CreateBookmark = async () => {
-    setLoading(true);
+    toast.promise(promise, {
+      loading: "Creating...",
+      success: (data) => {
+        return `${data.message}`;
+      },
+      error: "Error",
+    });
+
+    setLink("");
+  };
+  const BookMarkQuery = async () => {
     const user = await supabase.auth.getUser();
+    let name = await fetchTitle();
+    console.log("Tite", name);
     const { data: create, error } = await supabase.from("bookmarks").insert([
       {
         name: name,
-        data: data,
+        data: link,
         id_user: user.data.user?.id,
       },
     ]);
-    if (error) {
-      console.log(error);
-    } else {
-      setOpen(false);
-      toast.success("Bookmark Created");
-      resetInput();
-    }
   };
   const fetchTitle = async () => {
     try {
       const response = await axios.post("/api/fetch-title", {
-        url: "https://stackoverflow.com/questions/70564777/nextjs-api-error-typeerror-res-status-is-not-a-function",
+        url: link,
       });
-      setName(response.data.title);
+      return response.data.title;
     } catch (error) {
       console.error("Error fetching title:", error);
     }
   };
+
   return (
     <div className="max-w-2xl w-full flex items-center shadow-sm border-2 p-2 rounded-md ring-gray-400 border-gray focus-within:ring-2">
       <PlusIcon className="h-6 w-[5%]" />
       <Input
         placeholder="Insert a link, color, or just plain text"
         className="w-[89%] border-none shadow-none focus-visible:ring-0"
-        onChange={(e) => setData(e.target.value)}
-        value={data}
+        onChange={(e) => setLink(e.target.value)}
+        value={link}
         id="input-data"
         onKeyDown={(e) => {
           if (e.key === "Enter") {
-            setOpen(true);
-            fetchTitle();
+            CreateBookmark();
           }
         }}
       />
@@ -80,54 +72,6 @@ export default function BookmarkInput() {
         <Command size="18" />
         <p>F</p>
       </div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Add Bookmark</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name
-              </Label>
-              <Input
-                id="name"
-                className="col-span-3"
-                onChange={(e) => setName(e.target.value)}
-                value={name}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") CreateBookmark();
-                }}
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="username" className="text-right">
-                Data
-              </Label>
-              <Input
-                id="username"
-                className="col-span-3"
-                onChange={(e) => setData(e.target.value)}
-                value={data}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") CreateBookmark();
-                }}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            {loading ? (
-              <Button className="" disabled>
-                Create <SpinnerAnimation />
-              </Button>
-            ) : (
-              <Button type="button" onClick={CreateBookmark}>
-                Create
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

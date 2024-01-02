@@ -168,6 +168,14 @@ export default function Bookmarks({
                     openLink(bookmark.data);
                   }
                 }}
+                onMouseDown={(e) => {
+                  if (e.button === 2) {
+                    dispatch({ type: "select", payload: i });
+                  }
+                }}
+                onMouseEnter={() => {
+                  dispatch({ type: "select", payload: i });
+                }}
               >
                 <div className="flex items-center">
                   <Image
