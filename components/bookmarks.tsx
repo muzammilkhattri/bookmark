@@ -39,6 +39,17 @@ export default function Bookmarks({
       },
     ],
   ]);
+  useHotkeys([
+    [
+      "ctrl+d",
+      () => {
+        const idToDelete = document.getElementById(
+          `bookmark-${state.selectedIndex}`
+        )?.dataset.id;
+        deleteBookmark(idToDelete);
+      },
+    ],
+  ]);
   useEffect(() => {
     const channel = supabase
       .channel("realtime-bookmarks")
@@ -139,6 +150,7 @@ export default function Bookmarks({
                 tabIndex={0}
                 id={`bookmark-${i}`}
                 data-url={bookmark.data}
+                data-id={bookmark.id}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     dispatch({ type: "select", payload: i });
