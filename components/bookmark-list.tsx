@@ -3,6 +3,7 @@ import { Separator } from "./ui/separator";
 import { Bookmark } from "@/types/bookmark";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+
 export default async function BookmarkList({ query }: { query: string }) {
   const supabase = createServerComponentClient({ cookies });
   const user = await supabase.auth.getUser();

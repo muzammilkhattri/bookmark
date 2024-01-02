@@ -31,14 +31,17 @@ export default function BookmarkInput() {
 
   const searchQuery = async (value: string) => {
     setLink(value);
-    const params = new URLSearchParams(searchParams);
-    if (value) {
-      params.set("query", value);
+    if (value.includes("http://") || value.includes("https://")) {
+      console.log("URL");
     } else {
-      params.delete("query");
+      const params = new URLSearchParams(searchParams);
+      if (value) {
+        params.set("query", value);
+      } else {
+        params.delete("query");
+      }
+      replace(`${pathname}?${params.toString()}`);
     }
-
-    replace(`${pathname}?${params.toString()}`);
   };
   const promise = () =>
     new Promise((resolve) =>
