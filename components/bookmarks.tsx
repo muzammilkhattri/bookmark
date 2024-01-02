@@ -11,33 +11,10 @@ import {
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState, useReducer } from "react";
 import { toast } from "sonner";
-const useKeyPress = (targetKey) => {
-  const [keyPressed, setKeyPressed] = useState(false);
-
-  useEffect(() => {
-    const downHandler = ({ key }) => {
-      if (key === targetKey) {
-        setKeyPressed(true);
-      }
-    };
-
-    const upHandler = ({ key }) => {
-      if (key === targetKey) {
-        setKeyPressed(false);
-      }
-    };
-
-    window.addEventListener("keydown", downHandler);
-    window.addEventListener("keyup", upHandler);
-
-    return () => {
-      window.removeEventListener("keydown", downHandler);
-      window.removeEventListener("keyup", upHandler);
-    };
-  }, [targetKey]);
-
-  return keyPressed;
-};
+import { Copy, Edit, Trash } from "lucide-react";
+import { useKeyPress } from "../lib/useKeyPress";
+import { formateDate, fetchDomain, openLink } from "../lib/bookmark-utils";
+import { useHotkeys } from "@mantine/hooks";
 const initialState = { selectedIndex: 0 };
 
 export default function Bookmarks({
@@ -51,7 +28,17 @@ export default function Bookmarks({
   useEffect(() => {
     setBookmarks(serverBookmarks);
   }, [serverBookmarks]);
-
+  useHotkeys([
+    [
+      "ctrl+c",
+      () => {
+        const urlToCopy = document.getElementById(
+          `bookmark-${state.selectedIndex}`
+        )?.dataset.url;
+        copyLink(urlToCopy);
+      },
+    ],
+  ]);
   useEffect(() => {
     const channel = supabase
       .channel("realtime-bookmarks")
@@ -96,6 +83,7 @@ export default function Bookmarks({
               : 0,
         };
       case "select":
+        document.getElementById(`bookmark-${action.payload}`)?.focus();
         return { selectedIndex: action.payload };
       default:
         throw new Error();
@@ -108,40 +96,10 @@ export default function Bookmarks({
       .match({ id: id });
     toast.success("Bookmark Deleted");
   };
-  const formateDate = (timestamp) => {
-    const date = new Date(timestamp);
 
-    // Array of month names
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-
-    // Get the month and day from the Date object
-    const month = months[date.getMonth()];
-    const day = date.getDate();
-
-    // Format the result as "Month Day"
-    const formattedDate = `${month} ${day}`;
-
-    return formattedDate;
-  };
-  const fetchDomain = (url: string) => {
-    const domain = url.replace("https://", "").replace("http://", "");
-    return domain.split("/")[0];
-  };
-  const openLink = (link: string) => {
-    window.open(link, "_blank");
+  const copyLink = (link: string) => {
+    navigator.clipboard.writeText(link);
+    toast.success("Link Copied");
   };
   const arrowUpPressed = useKeyPress("ArrowUp");
   const arrowDownPressed = useKeyPress("ArrowDown");
@@ -180,6 +138,7 @@ export default function Bookmarks({
                 aria-pressed={i === state.selectedIndex}
                 tabIndex={0}
                 id={`bookmark-${i}`}
+                data-url={bookmark.data}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     dispatch({ type: "select", payload: i });
@@ -221,22 +180,24 @@ export default function Bookmarks({
                 </p>
               </div>
             </ContextMenuTrigger>
-            <ContextMenuContent className="w-64">
-              <ContextMenuItem inset>
-                Edit
-                <ContextMenuShortcut>⌘[</ContextMenuShortcut>
+            <ContextMenuContent className="w-44">
+              <ContextMenuItem>
+                <Edit size="14" className="mr-2" /> Edit
+                <ContextMenuShortcut>⌘E</ContextMenuShortcut>
               </ContextMenuItem>
 
-              <ContextMenuItem inset>
-                Open
-                <ContextMenuShortcut>⌘R</ContextMenuShortcut>
+              <ContextMenuItem
+                className="cursor-pointer"
+                onClick={() => copyLink(bookmark.data)}
+              >
+                <Copy size="14" className="mr-2" /> Copy Link
+                <ContextMenuShortcut>⌘C</ContextMenuShortcut>
               </ContextMenuItem>
               <ContextMenuItem
-                inset
                 onClick={() => deleteBookmark(bookmark.id)}
                 className="cursor-pointer"
               >
-                Delete
+                <Trash size="14" className="mr-2" /> Delete
                 <ContextMenuShortcut>⌘D</ContextMenuShortcut>
               </ContextMenuItem>
             </ContextMenuContent>
