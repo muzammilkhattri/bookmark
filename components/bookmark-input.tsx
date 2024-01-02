@@ -83,7 +83,10 @@ export default function BookmarkInput() {
 
   return (
     <div className="max-w-2xl w-full flex items-center shadow-sm border-2 p-2 rounded-md ring-gray-400 border-gray focus-within:ring-2">
-      <PlusIcon className="h-5 w-[5%]" />
+      <PlusIcon
+        className="h-5 w-[5%] cursor-pointer"
+        onClick={CreateBookmark}
+      />
       <Input
         placeholder="Insert a link, color, or just plain text"
         className="w-[89%] border-none shadow-none focus-visible:ring-0"
@@ -91,6 +94,7 @@ export default function BookmarkInput() {
         value={link}
         id="input-data"
         onKeyDown={(e) => {
+          console.log(e.key);
           if (e.key === "Enter") {
             CreateBookmark();
           }
