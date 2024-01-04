@@ -1,18 +1,23 @@
-import { signIn, signOut } from "../auth";
+"use client";
 import { Button } from "./ui/button";
 import { Icons } from "./icon";
-export function SignIn({
-  provider,
-  ...props
-}: { provider?: string } & React.ComponentPropsWithRef<typeof Button>) {
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+export function SignIn() {
+  const supabase = createClientComponentClient();
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${location.origin}/auth/callback`,
+      },
+    });
+  };
+
   return (
-    <form
-      action={async () => {
-        "use server";
-        await signIn(provider);
-      }}
-    >
-      <Button variant="outline" {...props}>
+    <form onSubmit={(e) => handleLogin(e)}>
+      <Button variant="outline">
         <Icons.google className="mr-2 h-4 w-4" />
         Sign In With Google
       </Button>
@@ -21,11 +26,16 @@ export function SignIn({
 }
 
 export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
+  const supabase = createClientComponentClient();
+
+  const handleLogout = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    await supabase.auth.signOut();
+  };
   return (
     <form
-      action={async () => {
-        "use server";
-        await signOut();
+      onSubmit={(e) => {
+        handleLogout(e);
       }}
       className="w-full"
     >
