@@ -53,7 +53,7 @@ export default function BookmarkInput() {
       success: (data) => {
         return `${data.name}`;
       },
-      error: "Error",
+      error: "Error Error",
     });
 
     setLink("");
