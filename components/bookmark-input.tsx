@@ -5,6 +5,7 @@ import { Command } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "@mantine/hooks";
 import axios from "axios";
+import { useDebouncedCallback } from "use-debounce";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { toast } from "sonner";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
@@ -29,8 +30,7 @@ export default function BookmarkInput() {
     ["ctrl+f", () => document.getElementById("input-data")?.focus()],
   ]);
 
-  const searchQuery = async (value: string) => {
-    setLink(value);
+  const searchQuery = useDebouncedCallback((value: string) => {
     if (value.includes("http://") || value.includes("https://")) {
       console.log("URL");
     } else {
@@ -42,7 +42,7 @@ export default function BookmarkInput() {
       }
       replace(`${pathname}?${params.toString()}`);
     }
-  };
+  }, 300);
   const promise = () =>
     new Promise((resolve) =>
       BookMarkQuery().then(() => resolve({ name: "Bookmark Created" }))
@@ -53,7 +53,7 @@ export default function BookmarkInput() {
       success: (data) => {
         return `${data.name}`;
       },
-      error: "Error",
+      error: "Error Error",
     });
 
     setLink("");
@@ -82,7 +82,7 @@ export default function BookmarkInput() {
   };
 
   return (
-    <div className="max-w-2xl w-full flex items-center shadow-sm border-2 p-2 rounded-md ring-gray-400 border-gray focus-within:ring-2">
+    <div className="max-w-2xl bg-white w-full flex items-center shadow-sm border-2 p-2 rounded-md ring-gray-400 border-gray focus-within:ring-2">
       <PlusIcon
         className="h-5 w-[5%] cursor-pointer"
         onClick={CreateBookmark}
@@ -90,7 +90,10 @@ export default function BookmarkInput() {
       <Input
         placeholder="Insert a link, color, or just plain text"
         className="w-[89%] border-none shadow-none focus-visible:ring-0"
-        onChange={(e) => searchQuery(e.target.value)}
+        onChange={(e) => {
+          setLink(e.target.value);
+          searchQuery(e.target.value);
+        }}
         value={link}
         id="input-data"
         onKeyDown={(e) => {
