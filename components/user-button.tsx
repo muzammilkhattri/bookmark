@@ -21,7 +21,7 @@ export default async function UserButton() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative w-8 h-8 rounded-full">
-          <Avatar className="w-8 h-8">
+          <Avatar className="w-7 h-7">
             {session.user.user_metadata.avatar_url && (
               <AvatarImage
                 src={session.user.user_metadata.avatar_url}
