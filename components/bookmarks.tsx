@@ -143,7 +143,9 @@ export default function Bookmarks({
                 style={{
                   cursor: "pointer",
                   background:
-                    i === state.selectedIndex ? " rgb(243 244 246)" : "white",
+                    i === state.selectedIndex
+                      ? " rgb(243 244 246)"
+                      : "hsl(300 50% 99%)",
                 }}
                 role="button"
                 aria-pressed={i === state.selectedIndex}

@@ -20,9 +20,11 @@ export function MainNav() {
     <div className="flex items-center space-x-2 lg:space-x-6">
       <h2>
         <Link href="/" className="font-medium text-md">
-          <LibrarySquare className="inline-block w-7 h-7" />
+          <LibrarySquare className="inline-block w-7 h-7" />{" "}
         </Link>
       </h2>
+      <span className="text-3xl">/</span>
+
       <GroupSwitcher />
     </div>
   );
