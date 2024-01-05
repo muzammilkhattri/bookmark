@@ -5,9 +5,6 @@ import Link from "next/link";
 export default function Navbar() {
   return (
     <nav className="flex justify-between px-10 items-center w-full h-20 border-b border-gray-200">
-      <div className="flex items-center">
-        <h1 className="font-bold text-2xl">Bookmark</h1>
-      </div>
       <div className="gap-2 flex items-center font-medium text-md">
         <Link
           href="/login"

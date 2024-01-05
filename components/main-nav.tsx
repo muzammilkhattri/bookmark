@@ -12,18 +12,20 @@ import {
 } from "./ui/navigation-menu";
 import Link from "next/link";
 import React from "react";
+import GroupSwitcher from "./group-switcher";
+import { LibrarySquare } from "lucide-react";
 
 export function MainNav() {
   return (
     <div className="flex items-center space-x-2 lg:space-x-6">
       <h2>
-        <Link href="/" className="font-semibold text-xl">
-          Bookmark
+        <Link href="/" className="font-medium text-md">
+          <LibrarySquare className="inline-block w-7 h-7" />{" "}
         </Link>
       </h2>
-      <NavigationMenu>
-        <NavigationMenuList></NavigationMenuList>
-      </NavigationMenu>
+      <span className="text-3xl">/</span>
+
+      <GroupSwitcher />
     </div>
   );
 }
