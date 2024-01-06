@@ -6,9 +6,9 @@ import {
   CheckIcon,
   PlusCircledIcon,
 } from "@radix-ui/react-icons";
-
+import { Tables } from "@/types/supabase";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
   Command,
@@ -33,8 +33,7 @@ import { Label } from "./ui/label";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { toast } from "sonner";
-import { load } from "cheerio";
-import SpinnerAnimation from "./Spinner";
+import SpinnerAnimation from "./spinner";
 
 const groups = [
   {
@@ -56,7 +55,7 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
   const [groupsState, setGroupsState] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [groupName, setGroupName] = React.useState("");
-  const [selectedTeam, setSelectedTeam] = React.useState();
+  const [selectedGroup, setSelectedGroup] = React.useState();
   React.useEffect(() => {
     const fetchGroups = async () => {
       const user = await supabase.auth.getUser();
@@ -65,29 +64,37 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
         .select("*")
         .eq("id_user", user.data?.user?.id);
       setGroupsState(groupsData);
-      setSelectedTeam(groupsData[0].name);
+      setSelectedGroup(groupsData[0].name);
     };
     fetchGroups();
   }, [loading]);
 
   const [open, setOpen] = React.useState(false);
-  const [showNewGroupDialog, setShowGroupTeamDialog] = React.useState(false);
+  const [showNewGroupDialog, setShowGroupDialog] = React.useState(false);
   const createGroup = async () => {
-    setLoading(true);
-    const user = await supabase.auth.getUser();
-    const { data, error } = await supabase.from("groups").insert([
-      {
-        id_user: user.data?.user?.id,
-        name: groupName,
-      },
-    ]);
-    setShowGroupTeamDialog(false);
-    toast.success("Group created successfully");
-    setGroupsState([...groupsState, { name: groupName }]);
-    setLoading(false);
+    try {
+      setShowGroupDialog(false);
+      const user = await supabase.auth.getUser();
+      const { data, error } = await supabase.from("groups").insert([
+        {
+          id_user: user.data?.user?.id,
+          name: groupName,
+        },
+      ]);
+
+      if (error) {
+        throw new Error("Group creation failed");
+      }
+
+      toast.success("Group created successfully");
+      setGroupsState([...groupsState, { name: groupName }]);
+      setSelectedGroup(groupName);
+    } catch (error) {
+      console.error("Error creating group:", error);
+    }
   };
   return (
-    <Dialog open={showNewGroupDialog} onOpenChange={setShowGroupTeamDialog}>
+    <Dialog open={showNewGroupDialog} onOpenChange={setShowGroupDialog}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -100,12 +107,12 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
             <Avatar className="mr-2 h-5 w-5">
               <AvatarImage
                 src={`https://avatar.vercel.sh/${encodeURI(
-                  selectedTeam?.replace(/[^a-zA-Z ]/g, "")
+                  selectedGroup?.replace(/[^a-zA-Z ]/g, "")
                 )}.png`}
-                alt={selectedTeam}
+                alt={selectedGroup}
               />
             </Avatar>
-            {selectedTeam}
+            {selectedGroup}
             <CaretSortIcon className="ml-auto h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -119,7 +126,7 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
                   <CommandItem
                     key={group.name}
                     onSelect={() => {
-                      setSelectedTeam(group.name);
+                      setSelectedGroup(group.name);
                       setOpen(false);
                     }}
                     className="text-sm"
@@ -136,7 +143,7 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
                     <CheckIcon
                       className={cn(
                         "ml-auto h-4 w-4",
-                        selectedTeam === group.name
+                        selectedGroup === group.name
                           ? "opacity-100"
                           : "opacity-0"
                       )}
@@ -152,7 +159,7 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
                   <CommandItem
                     onSelect={() => {
                       setOpen(false);
-                      setShowGroupTeamDialog(true);
+                      setShowGroupDialog(true);
                     }}
                   >
                     <PlusCircledIcon className="mr-2 h-5 w-5" />
@@ -185,10 +192,7 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
           </div>
         </div>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => setShowGroupTeamDialog(false)}
-          >
+          <Button variant="outline" onClick={() => setShowGroupDialog(false)}>
             Cancel
           </Button>
           {loading ? (
