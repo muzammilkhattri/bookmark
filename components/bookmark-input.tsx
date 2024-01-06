@@ -4,20 +4,21 @@ import { PlusIcon } from "@radix-ui/react-icons";
 import { Command } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "@mantine/hooks";
-import axios from "axios";
 import { useDebouncedCallback } from "use-debounce";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { toast } from "sonner";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { fetchTitle } from "@/lib/utils";
 
 export default function BookmarkInput() {
+  const { replace } = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const supabase = createClientComponentClient();
 
   const [link, setLink] = useState(searchParams.get("query")?.toString());
   const [id_user, setIDUser] = useState("");
-  const { replace } = useRouter();
-  const pathname = usePathname();
-  const supabase = createClientComponentClient();
+
   useEffect(() => {
     const getUserID = async () => {
       const user = await supabase.auth.getUser();
@@ -43,49 +44,49 @@ export default function BookmarkInput() {
       replace(`${pathname}?${params.toString()}`);
     }
   }, 300);
-  const promise = () =>
-    new Promise((resolve) =>
-      BookMarkQuery().then(() => resolve({ name: "Bookmark Created" }))
-    );
-  const CreateBookmark = async () => {
-    toast.promise(promise, {
-      loading: "Creating...",
-      success: (data) => {
-        return `${data.name}`;
-      },
-      error: "Error Error",
-    });
 
-    setLink("");
-  };
-  const BookMarkQuery = async () => {
-    let name = await fetchTitle();
-    console.log("Tite", name);
-    const { data: create, error } = await supabase.from("bookmarks").insert([
+  const createBookmark = async () => {
+    toast.promise(
+      (async () => {
+        try {
+          const name = await fetchTitle(link as string);
+          console.log("Title", name);
+
+          const { data, error } = await supabase.from("bookmarks").insert([
+            {
+              name: name,
+              data: link,
+              id_user: id_user,
+            },
+          ]);
+
+          if (error) {
+            throw new Error("Bookmark creation failed");
+          }
+
+          return { name: "Bookmark Created" };
+        } catch (error) {
+          console.error("Error creating bookmark:", error);
+          throw error;
+        } finally {
+          setLink("");
+        }
+      })(),
       {
-        name: name,
-        data: link,
-        id_user: id_user,
-      },
-    ]);
-  };
-
-  const fetchTitle = async () => {
-    try {
-      const response = await axios.post("/api/fetch-title", {
-        url: link,
-      });
-      return response.data.title;
-    } catch (error) {
-      console.error("Error fetching title:", error);
-    }
+        loading: "Creating...",
+        success: (data) => {
+          return `${data.name}`;
+        },
+        error: "Error Error",
+      }
+    );
   };
 
   return (
     <div className="max-w-2xl bg-white w-full flex items-center shadow-sm border-2 p-2 rounded-md ring-gray-400 border-gray focus-within:ring-2">
       <PlusIcon
         className="h-5 w-[5%] cursor-pointer"
-        onClick={CreateBookmark}
+        onClick={createBookmark}
       />
       <Input
         placeholder="Insert a link, color, or just plain text"
@@ -99,12 +100,12 @@ export default function BookmarkInput() {
         onKeyDown={(e) => {
           console.log(e.key);
           if (e.key === "Enter") {
-            CreateBookmark();
+            createBookmark();
           }
         }}
       />
       <div className="flex items-center justify-center w-[6%] bg-gray-100  p-1 rounded-md">
-        <Command size="14" />
+        <Command className="mr-1" size="14" />
         <p>F</p>
       </div>
     </div>

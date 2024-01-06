@@ -32,8 +32,9 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
-import { group } from "console";
-import { TemplateContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { toast } from "sonner";
+import { load } from "cheerio";
+import SpinnerAnimation from "./Spinner";
 
 const groups = [
   {
@@ -53,6 +54,8 @@ interface TeamSwitcherProps extends PopoverTriggerProps {}
 export default function GroupSwitcher({ className }: TeamSwitcherProps) {
   const supabase = createClientComponentClient();
   const [groupsState, setGroupsState] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [groupName, setGroupName] = React.useState("");
   const [selectedTeam, setSelectedTeam] = React.useState();
   React.useEffect(() => {
     const fetchGroups = async () => {
@@ -65,11 +68,24 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
       setSelectedTeam(groupsData[0].name);
     };
     fetchGroups();
-  }, []);
+  }, [loading]);
 
   const [open, setOpen] = React.useState(false);
   const [showNewGroupDialog, setShowGroupTeamDialog] = React.useState(false);
-
+  const createGroup = async () => {
+    setLoading(true);
+    const user = await supabase.auth.getUser();
+    const { data, error } = await supabase.from("groups").insert([
+      {
+        id_user: user.data?.user?.id,
+        name: groupName,
+      },
+    ]);
+    setShowGroupTeamDialog(false);
+    toast.success("Group created successfully");
+    setGroupsState([...groupsState, { name: groupName }]);
+    setLoading(false);
+  };
   return (
     <Dialog open={showNewGroupDialog} onOpenChange={setShowGroupTeamDialog}>
       <Popover open={open} onOpenChange={setOpen}>
@@ -159,7 +175,12 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
           <div className="space-y-4 py-2 pb-4">
             <div className="space-y-2">
               <Label htmlFor="name">Group Name</Label>
-              <Input id="name" placeholder="UI / UX." />
+              <Input
+                id="name"
+                placeholder="UI / UX."
+                onChange={(e) => setGroupName(e.target.value)}
+                value={groupName}
+              />
             </div>
           </div>
         </div>
@@ -170,7 +191,13 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
           >
             Cancel
           </Button>
-          <Button type="submit">Continue</Button>
+          {loading ? (
+            <Button disabled>
+              <SpinnerAnimation /> Creating
+            </Button>
+          ) : (
+            <Button onClick={createGroup}>Create</Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
