@@ -1,6 +1,5 @@
 import { Metadata } from "next";
-import { UserAuthForm } from "@/components/user-auth-form";
-
+import { SignIn } from "@/components/auth-component";
 export const metadata: Metadata = {
   title: "Authentication",
   description: "Authentication forms built using the components.",
@@ -23,7 +22,9 @@ export default function AuthenticationPage() {
                 Create an account with singin with Google.
               </p>
             </div>
-            <UserAuthForm />
+            <div className="grid gap-6">
+              <SignIn />
+            </div>
           </div>
         </div>
       </div>
