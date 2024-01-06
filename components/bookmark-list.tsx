@@ -1,11 +1,13 @@
 import Bookmarks from "./bookmarks";
 import { Separator } from "./ui/separator";
-import { Bookmark } from "@/types/bookmark";
+import { Tables } from "@/types/supabase";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 export const dynamic = "force-dynamic";
 
 export default async function BookmarkList({ query }: { query: string }) {
+  type Bookmark = Tables<"bookmarks">;
+
   const supabase = createServerComponentClient({ cookies });
   const user = await supabase.auth.getUser();
   const id_user = user.data.user?.id;

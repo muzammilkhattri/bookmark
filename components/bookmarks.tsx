@@ -1,5 +1,5 @@
 "use client";
-import { Bookmark } from "@/types/bookmark";
+import { Tables } from "@/types/supabase";
 import Image from "next/image";
 import {
   ContextMenu,
@@ -12,11 +12,18 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState, useReducer } from "react";
 import { toast } from "sonner";
 import { Copy, Edit, Trash } from "lucide-react";
-import { useKeyPress } from "../lib/useKeyPress";
-import { formateDate, fetchDomain, openLink } from "../lib/bookmark-utils";
+import { useKeyPress } from "@/lib/hooks/useKeyPress";
+import { formateDate, fetchDomain, openLink } from "@/lib/utils";
 import { useHotkeys } from "@mantine/hooks";
 const initialState = { selectedIndex: 0 };
-
+interface SelectedIndexState {
+  selectedIndex: number;
+}
+type Bookmark = Tables<"bookmarks">;
+type Action = {
+  type: string;
+  payload?: number;
+};
 export default function Bookmarks({
   serverBookmarks,
 }: {
@@ -35,7 +42,7 @@ export default function Bookmarks({
         const urlToCopy = document.getElementById(
           `bookmark-${state.selectedIndex}`
         )?.dataset.url;
-        copyLink(urlToCopy);
+        copyLink(urlToCopy as string);
       },
     ],
   ]);
@@ -43,7 +50,7 @@ export default function Bookmarks({
     [
       "ctrl+d",
       () => {
-        const idToDelete = document.getElementById(
+        const idToDelete: any = document.getElementById(
           `bookmark-${state.selectedIndex}`
         )?.dataset.id;
         deleteBookmark(idToDelete);
@@ -75,7 +82,10 @@ export default function Bookmarks({
       supabase.removeChannel(channel);
     };
   }, [supabase, setBookmarks, bookmarks]);
-  const reducer = (state, action) => {
+  const reducer = (
+    state: SelectedIndexState,
+    action: Action
+  ): SelectedIndexState => {
     switch (action.type) {
       case "arrowUp":
         document.getElementById(`bookmark-${state.selectedIndex - 1}`)?.focus();
@@ -95,12 +105,12 @@ export default function Bookmarks({
         };
       case "select":
         document.getElementById(`bookmark-${action.payload}`)?.focus();
-        return { selectedIndex: action.payload };
+        return { selectedIndex: action.payload as number };
       default:
         throw new Error();
     }
   };
-  const deleteBookmark = async (id: string) => {
+  const deleteBookmark = async (id: number) => {
     const { data, error } = await supabase
       .from("bookmarks")
       .delete()
@@ -117,16 +127,13 @@ export default function Bookmarks({
   const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
-    if (arrowUpPressed) {
-      dispatch({ type: "arrowUp" });
-    }
-  }, [arrowUpPressed]);
-
-  useEffect(() => {
     if (arrowDownPressed) {
       dispatch({ type: "arrowDown" });
     }
-  }, [arrowDownPressed]);
+    if (arrowUpPressed) {
+      dispatch({ type: "arrowUp" });
+    }
+  }, [arrowDownPressed, arrowUpPressed]);
   // show the month and date only form timestamp
   return (
     <div className="flex flex-col justify-center max-h-screen" id="bookmark">
@@ -137,7 +144,6 @@ export default function Bookmarks({
               <div
                 className="flex mt-2 flex-row w-full justify-between p-2 rounded-md cursor-pointer focus:outline-none"
                 onClick={() => {
-                  dispatch({ type: "select", payload: i });
                   openLink(bookmark.data);
                 }}
                 style={{
@@ -155,13 +161,7 @@ export default function Bookmarks({
                 data-id={bookmark.id}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
-                    dispatch({ type: "select", payload: i });
                     openLink(bookmark.data);
-                  }
-                }}
-                onMouseDown={(e) => {
-                  if (e.button === 2) {
-                    dispatch({ type: "select", payload: i });
                   }
                 }}
                 onMouseEnter={() => {
