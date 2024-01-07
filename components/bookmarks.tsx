@@ -135,7 +135,7 @@ export default function Bookmarks({
   }, [arrowDownPressed, arrowUpPressed]);
 
   return (
-    <ScrollArea className="max-h-screen px-2">
+    <ScrollArea className="h-screen max-h-screen px-2">
       <div className="flex flex-col justify-center " id="bookmark">
         {bookmarks?.map((bookmark: Bookmark, i) => (
           <div>

@@ -4,11 +4,13 @@ import { Icons } from "./icon";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
+import SpinnerAnimation from "./spinner";
 export function SignIn() {
   const supabase = createClientComponentClient();
-
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const [loading, setLoading] = useState(false);
+  const handleLogin = async () => {
+    setLoading(true);
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -17,13 +19,18 @@ export function SignIn() {
     });
   };
 
-  return (
-    <form onSubmit={(e) => handleLogin(e)}>
-      <Button variant="outline" className="w-full">
-        <Icons.google className="mr-2 h-4 w-4" />
-        Sign In With Google
-      </Button>
-    </form>
+  return loading ? (
+    <Button variant="outline" className="w-full" onClick={handleLogin} disabled>
+      <SpinnerAnimation />
+      <Icons.google className="mr-2 h-4 w-4" />
+      Sign In With Google
+    </Button>
+  ) : (
+    <Button variant="outline" className="w-full" onClick={handleLogin}>
+      {" "}
+      <Icons.google className="mr-2 h-4 w-4" />
+      Sign In With Google
+    </Button>
   );
 }
 

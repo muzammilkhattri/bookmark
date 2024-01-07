@@ -19,7 +19,7 @@ export default async function UserButton() {
   const { data: session } = await supabase.auth.getUser();
   if (!session?.user) return <Link href="/login">Login</Link>;
   return (
-    <div className=" justify-center flex">
+    <div className="flex items-center justify-center">
       <GroupSwitcher className="mr-2" />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
