@@ -6,7 +6,6 @@ import {
   CheckIcon,
   PlusCircledIcon,
 } from "@radix-ui/react-icons";
-import { Tables } from "@/types/supabase";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
@@ -33,36 +32,33 @@ import { Label } from "./ui/label";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { toast } from "sonner";
+import { Tables } from "@/types/supabase";
 import SpinnerAnimation from "./spinner";
-
-const groups = [
-  {
-    label: "Groups",
-    teams: [],
-  },
-];
-
-type Team = (typeof groups)[number]["teams"][number];
+import { UUID } from "crypto";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
 >;
 
-interface TeamSwitcherProps extends PopoverTriggerProps {}
+interface GroupSwitcherProps extends PopoverTriggerProps {}
 
-export default function GroupSwitcher({ className }: TeamSwitcherProps) {
+type group = Tables<"groups">;
+let userId: string;
+
+export default function GroupSwitcher({ className }: GroupSwitcherProps) {
   const supabase = createClientComponentClient();
-  const [groupsState, setGroupsState] = React.useState([]);
+  const [groupsState, setGroupsState] = React.useState<group[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [groupName, setGroupName] = React.useState("");
-  const [selectedGroup, setSelectedGroup] = React.useState();
+  const [selectedGroup, setSelectedGroup] = React.useState("");
   React.useEffect(() => {
     const fetchGroups = async () => {
       const user = await supabase.auth.getUser();
+      userId = user.data.user?.id as string;
       const { data: groupsData, error } = await supabase
         .from("groups")
         .select("*")
-        .eq("id_user", user.data?.user?.id);
+        .eq("id_user", userId);
       setGroupsState(groupsData);
       setSelectedGroup(groupsData[0].name);
     };
@@ -73,11 +69,10 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
   const [showNewGroupDialog, setShowGroupDialog] = React.useState(false);
   const createGroup = async () => {
     try {
-      setShowGroupDialog(false);
-      const user = await supabase.auth.getUser();
+      setLoading(true);
       const { data, error } = await supabase.from("groups").insert([
         {
-          id_user: user.data?.user?.id,
+          id_user: userId,
           name: groupName,
         },
       ]);
@@ -85,10 +80,10 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
       if (error) {
         throw new Error("Group creation failed");
       }
-
+      setShowGroupDialog(false);
+      setGroupName("");
       toast.success("Group created successfully");
-      setGroupsState([...groupsState, { name: groupName }]);
-      setSelectedGroup(groupName);
+      setLoading(false);
     } catch (error) {
       console.error("Error creating group:", error);
     }
@@ -101,7 +96,7 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            aria-label="Select a team"
+            aria-label="Select a Group"
             className={cn("w-[200px] justify-between", className)}
           >
             <Avatar className="mr-2 h-5 w-5">
@@ -120,16 +115,16 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
           <Command>
             <CommandList>
               <CommandInput placeholder="Search group..." />
-              <CommandEmpty>No team found.</CommandEmpty>
+              <CommandEmpty>No Group found.</CommandEmpty>
               <CommandGroup heading="Groups">
-                {groupsState.map((group) => (
+                {groupsState?.map((group) => (
                   <CommandItem
                     key={group.name}
                     onSelect={() => {
                       setSelectedGroup(group.name);
                       setOpen(false);
                     }}
-                    className="text-sm"
+                    className="text-sm cursor-pointer"
                   >
                     <Avatar className="mr-2 h-5 w-5">
                       <AvatarImage
@@ -161,6 +156,7 @@ export default function GroupSwitcher({ className }: TeamSwitcherProps) {
                       setOpen(false);
                       setShowGroupDialog(true);
                     }}
+                    className="cursor-pointer"
                   >
                     <PlusCircledIcon className="mr-2 h-5 w-5" />
                     Create Group

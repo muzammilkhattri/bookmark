@@ -34,9 +34,6 @@ export default function Bookmarks({
   const [bookmarks, setBookmarks] = useState(serverBookmarks);
   const supabase = createClientComponentClient();
 
-  useEffect(() => {
-    setBookmarks(serverBookmarks);
-  }, [serverBookmarks]);
   useHotkeys([
     [
       "ctrl+c",
@@ -47,8 +44,6 @@ export default function Bookmarks({
         copyLink(urlToCopy as string);
       },
     ],
-  ]);
-  useHotkeys([
     [
       "ctrl+d",
       () => {
@@ -59,6 +54,7 @@ export default function Bookmarks({
       },
     ],
   ]);
+
   useEffect(() => {
     const channel = supabase
       .channel("realtime-bookmarks")
@@ -128,6 +124,7 @@ export default function Bookmarks({
   const arrowDownPressed = useKeyPress("ArrowDown");
   const [state, dispatch] = useReducer(reducer, initialState);
 
+  // update the selected index when arrow up or down is pressed
   useEffect(() => {
     if (arrowDownPressed) {
       dispatch({ type: "arrowDown" });
@@ -136,7 +133,7 @@ export default function Bookmarks({
       dispatch({ type: "arrowUp" });
     }
   }, [arrowDownPressed, arrowUpPressed]);
-  // show the month and date only form timestamp
+
   return (
     <ScrollArea className="max-h-screen px-2">
       <div className="flex flex-col justify-center " id="bookmark">
