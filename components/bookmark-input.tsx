@@ -10,22 +10,13 @@ import { toast } from "sonner";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { fetchTitle } from "@/lib/utils";
 
-export default function BookmarkInput() {
+export default function BookmarkInput({ id_user }: { id_user: string }) {
   const { replace } = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const supabase = createClientComponentClient();
 
   const [link, setLink] = useState(searchParams.get("query")?.toString());
-  const [id_user, setIDUser] = useState("");
-
-  useEffect(() => {
-    const getUserID = async () => {
-      const user = await supabase.auth.getUser();
-      setIDUser(user.data?.user?.id as string);
-    };
-    getUserID();
-  }, []);
 
   useHotkeys([
     ["ctrl+f", () => document.getElementById("input-data")?.focus()],

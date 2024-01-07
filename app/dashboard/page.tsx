@@ -14,13 +14,15 @@ export default async function Page({
   const query = searchParams?.query || "";
   const supbase = createServerComponentClient({ cookies });
   const { data: session } = await supbase.auth.getSession();
-  if (!session) {
+  if (!session.session) {
     redirect("/login");
   }
+  const user = await supbase.auth.getUser();
+  const userId = user?.data?.user?.id!;
   return (
     <div className="flex flex-col items-center">
-      <BookmarkInput />
-      <BookmarkList query={query} />
+      <BookmarkInput id_user={userId} />
+      <BookmarkList query={query} id_user={userId} />
     </div>
   );
 }

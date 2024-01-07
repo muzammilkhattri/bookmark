@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Icons } from "./icon";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 export function SignIn() {
   const supabase = createClientComponentClient();
 
@@ -29,21 +30,13 @@ export function SignIn() {
 export function SignOut(props: React.ComponentPropsWithRef<typeof Button>) {
   const supabase = createClientComponentClient();
   const router = useRouter();
-  const handleLogout = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleLogout = async () => {
     await supabase.auth.signOut();
     router.refresh();
   };
   return (
-    <form
-      onSubmit={(e) => {
-        handleLogout(e);
-      }}
-      className="w-full"
-    >
-      <Button variant="ghost" className="w-full p-0" {...props}>
-        Sign Out
-      </Button>
-    </form>
+    <Link href="" onClick={handleLogout}>
+      Logout
+    </Link>
   );
 }
